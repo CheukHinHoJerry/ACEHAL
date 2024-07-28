@@ -9,7 +9,7 @@ from ase.constraints import full_3x3_to_voigt_6_stress
 from julia.api import Julia
 jl = Julia(compiled_modules=False)
 from julia import Pkg
-Pkg.activate("/scratch/st-ortner-1/jerry528/cp_al/ACEHAL/Project.toml")
+Pkg.activate("/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/Project.toml")
 from julia import Main
 Main.eval("using ASE, JuLIP, ACE1")
 
@@ -21,6 +21,7 @@ convert = Main.eval("julip_at(a) = JuLIP.Atoms(a)")
 
 Main.eval(""" 
 using LinearAlgebra
+BLAS.set_num_threads(50) 
 
 function do_GC()
     GC.gc()

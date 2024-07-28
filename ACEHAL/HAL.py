@@ -270,7 +270,7 @@ def HAL(fit_configs, traj_configs, basis_source, solver, fit_kwargs, n_iters, re
         # this call should know and not actually write it again. 
         hal_monitor.write_final_config(new_config)
 
-        plot_traj_file = file_root.parent / (file_root.name + f".run_data.{HAL_label}.pdf")
+        plot_traj_file = file_root.parent / (file_root.name + f".run_data.{HAL_label}.png")
         trigger_data = {"criterion": (hal_monitor.HAL_trigger_step, np.abs(tol))}
         viz.plot_HAL_traj_data(hal_monitor.run_data, trigger_data, plot_traj_file)
 
@@ -407,7 +407,7 @@ def _fit(fit_configs, solver, fit_kwargs, B_len_norm, file_root, HAL_label):
     committee_calc = fit(atoms_list=fit_configs, solver=solver, B_len_norm=B_len_norm,
                          return_linear_problem=False, pot_file=pot_filename, **fit_kwargs)
 
-    plot_dimers_file = file_root.parent / (file_root.name + f".dimers.{HAL_label}.pdf")
+    plot_dimers_file = file_root.parent / (file_root.name + f".dimers.{HAL_label}.png")
     viz.plot_dimers(committee_calc, list(fit_kwargs["E0s"]), plot_dimers_file)
 
     return committee_calc

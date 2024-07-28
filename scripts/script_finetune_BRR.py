@@ -5,47 +5,38 @@ from ase.io import read
 from julia.api import Julia
 jl = Julia(compiled_modules=False)
 from julia import Pkg
-Pkg.activate("/scratch/st-ortner-1/jerry528/cp_al/ACEHAL/Project.toml")
+Pkg.activate("/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/Project.toml")
 from ACEHAL.HAL import HAL
 
 from mace.calculators import mace_mp
 from mace.calculators import MACECalculator
 from ase import build
 
-ft_path = "/scratch/st-ortner-1/jerry528/cp_al/LiCl-ft_run-3.model"
+ft_path = "/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/cp_al/LiCl-ft_run-3.model"
 
 ### read inital database 
-fit_configs = read("/scratch/st-ortner-1/jerry528/cp_al/data/LiCl_train82.xyz", ":")
-# use only 10% of original dataset
-fit_configs = fit_configs[1:10:-1]
+fit_configs = read("/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/data/LiCl/LiCl_train82.xyz", ":")
+fit_configs = fit_configs[0:-1:10]
+test_configs = read("/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/data/LiCl/test.xyz", ":")
 
 ## keys of the DFT labels in the initial database, to be used in HAL configs too, Fmax excludes large forces from fitting
 data_keys = { "E" : "energy", "F" : "forces", "V" : "virial", "Fmax" : 15.0 }
 
 ## set up (CASTEP) DFT calculator
-model_ft = MACECalculator(model_paths=ft_path, device="cuda", compute_stress = True)
+model_ft = MACECalculator(model_paths=ft_path, device="cpu", compute_stress = True)
 calculator = model_ft
-# calculator._directory="./_CASTEP"
-# calculator.param.cut_off_energy=500
-# calculator.param.mixing_scheme='Pulay'
-# calculator.param.write_checkpoint='none'
-# calculator.param.smearing_width=0.1
-# calculator.param.finite_basis_corr='automatic'
-# calculator.param.calculate_stress=True
-# calculator.param.max_scf_cycles=250
-# calculator.cell.kpoints_mp_spacing=0.04
 
 ## set isolated atom energies or E0s (possible to use numbers from CASTEP pseudopotential file)
 E0s = { "Li" : -0.06062883, "Cl" : -0.07200602000000002 }
 
 ## weights, the denominators may be interpreted as GAP sigmas
-weights = { "E_per_atom": 1.0 / 0.001, "F": 1.0 / 0.1, "V_per_atom": 1.0 / 0.01 }
+weights = { "E": 30.0, "F": 10.0, "V": 1.0}
 
 ## sklearn BRR solver
 solver = BayesianRidge(fit_intercept=True, compute_score=True)
 
 ## cor_order, r_cut fixed, whereas maxdeg is optimised
-fixed_basis_info = {"elements": list(E0s.keys()), "cor_order" : 2, "r_cut" : 6.7,  "smoothness_prior" : None}
+fixed_basis_info = {"elements": list(E0s.keys()), "cor_order" : 2, "r_cut" : 6.7,  "smoothness_prior" : ("gaussian", 0.354)}
 optimize_params = {"maxdeg": ("int", (15, 15))}
 
 HAL(fit_configs, # initial fitting database
@@ -67,12 +58,13 @@ HAL(fit_configs, # initial fitting database
     P_GPa=1.0, # Pressure (in GPa)
     swap_step_interval=0, # atom swap MC step interval 
     cell_step_interval=0, # cell shape MC step interval
-    basis_optim_kwargs={"n_trials": 10, # max number of basis optimisation iterations
+    basis_optim_kwargs={"n_trials": 3, # max number of basis optimisation iterations
                         "timeout" : 10000, # timeout for a basis optimisation iteration
                         "max_basis_len": 10000, # max basis size 
                         "fixed_basis_info": fixed_basis_info, # fixed basis information (see above)
                         "optimize_params": optimize_params}, # optimisable parameter (see above)
     basis_optim_interval=1, # interval of basis optimisation  
     file_root="test_HAL", # file root for names
-    test_fraction=0.1, # fraction of config sampled for test database
-    traj_interval=10) # interval of saving snapshots of trajectory
+    test_fraction=0.0, # fraction of config sampled for test database
+    traj_interval=10,
+    test_configs = test_configs) # interval of saving snapshots of trajectory
