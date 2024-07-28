@@ -8,7 +8,8 @@ from ase.constraints import full_3x3_to_voigt_6_stress
 
 from julia.api import Julia
 jl = Julia(compiled_modules=False)
-
+from julia import Pkg
+Pkg.activate("/scratch/st-ortner-1/jerry528/cp_al/ACEHAL/Project.toml")
 from julia import Main
 Main.eval("using ASE, JuLIP, ACE1")
 
