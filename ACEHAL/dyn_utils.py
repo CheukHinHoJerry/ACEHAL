@@ -220,6 +220,8 @@ class HALMonitor:
         # check HAL tolerance
         forces_err = atoms.calc.results_extra["err_forces"] if self.err_forces_RMS else atoms.calc.results_extra["err_forces_MAE"]
         # NOTE: add support for softmax
+        # chho: do conformal prediction here, and then define a new criterion
+        # with a switch if use_cp: criterion = get_cp_criterion_from_julia(atoms) else: fallback()
         criterion = np.max(forces_err / (np.linalg.norm(atoms.calc.results_extra["unbiased_forces"], axis=1) + self.tol_eps))
         self.run_data["criterion"].append(criterion)
 

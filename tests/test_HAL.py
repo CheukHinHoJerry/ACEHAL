@@ -137,7 +137,7 @@ def do_HAL_test(solver, basis_source, fixed_basis_info, optimize_params, basis_d
     # basis optimizations
     assert len(list(tmp_path.glob("test_HAL.pot.it_*.json"))) >= len(new_fit_configs) + 1
     # one dimer plot for each fit
-    assert len(list(tmp_path.glob("test_HAL.dimers.it_*.pdf"))) == len(list(tmp_path.glob("test_HAL.pot.it_*.json")))
+    assert len(list(tmp_path.glob("test_HAL.dimers.it_*.png"))) == len(list(tmp_path.glob("test_HAL.pot.it_*.json")))
     # trajectory and plot for each iter
     assert len(list(tmp_path.glob("test_HAL.traj.it_*.extxyz"))) == n_iters
     assert len(list(tmp_path.glob("test_HAL.run_data.it_*.pdf"))) == n_iters

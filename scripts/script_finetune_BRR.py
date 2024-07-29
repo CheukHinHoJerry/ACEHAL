@@ -12,12 +12,22 @@ from mace.calculators import mace_mp
 from mace.calculators import MACECalculator
 from ase import build
 
+import os
+
 ft_path = "/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/cp_al/LiCl-ft_run-3.model"
 
 ### read inital database 
 fit_configs = read("/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/data/LiCl/LiCl_train82.xyz", ":")
-fit_configs = fit_configs[0:-1:10]
+fit_configs = fit_configs[0:-1:8]
 test_configs = read("/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/data/LiCl/test.xyz", ":")
+res_path = "/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/cp_al/ACEHAL/result/testHAL28June1900/"
+
+if not os.path.exists(res_path):
+    os.makedirs(res_path)
+    print(f"Directory created at {res_path}.")
+else:
+    print(f"Directory {res_path} already exists, overwriting")
+
 
 ## keys of the DFT labels in the initial database, to be used in HAL configs too, Fmax excludes large forces from fitting
 data_keys = { "E" : "energy", "F" : "forces", "V" : "virial", "Fmax" : 15.0 }
@@ -36,8 +46,8 @@ weights = { "E": 30.0, "F": 10.0, "V": 1.0}
 solver = BayesianRidge(fit_intercept=True, compute_score=True)
 
 ## cor_order, r_cut fixed, whereas maxdeg is optimised
-fixed_basis_info = {"elements": list(E0s.keys()), "cor_order" : 2, "r_cut" : 6.7,  "smoothness_prior" : ("gaussian", 0.354)}
-optimize_params = {"maxdeg": ("int", (15, 15))}
+fixed_basis_info = {"elements": list(E0s.keys()), "cor_order" : 3, "r_cut" : 6.7,  "smoothness_prior" : ("gaussian", 0.354)}
+optimize_params = {"maxdeg": ("int", (15, 15, 10))}
 
 HAL(fit_configs, # initial fitting database
     fit_configs, # initial starting datbase for HAL (often equal to initial fitting datbase)
@@ -64,7 +74,7 @@ HAL(fit_configs, # initial fitting database
                         "fixed_basis_info": fixed_basis_info, # fixed basis information (see above)
                         "optimize_params": optimize_params}, # optimisable parameter (see above)
     basis_optim_interval=1, # interval of basis optimisation  
-    file_root="test_HAL", # file root for names
+    file_root=res_path, # file root for names
     test_fraction=0.0, # fraction of config sampled for test database
     traj_interval=10,
     test_configs = test_configs) # interval of saving snapshots of trajectory
