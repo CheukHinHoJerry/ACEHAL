@@ -20,7 +20,7 @@ ft_path = "/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/cp_al/LiCl-ft_
 fit_configs = read("/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/data/LiCl/LiCl_train82.xyz", ":")
 fit_configs = fit_configs[0:-1:8]
 test_configs = read("/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/data/LiCl/test.xyz", ":")
-res_path = "/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/cp_al/ACEHAL/result/testHAL28June1900/"
+res_path = "/zfs/users/jerryho528/jerryho528/julia_ws/LocalForceUQ/cp_al/ACEHAL/result/testHAL29June0100_900K_pure/"
 
 if not os.path.exists(res_path):
     os.makedirs(res_path)
@@ -46,8 +46,8 @@ weights = { "E": 30.0, "F": 10.0, "V": 1.0}
 solver = BayesianRidge(fit_intercept=True, compute_score=True)
 
 ## cor_order, r_cut fixed, whereas maxdeg is optimised
-fixed_basis_info = {"elements": list(E0s.keys()), "cor_order" : 3, "r_cut" : 6.7,  "smoothness_prior" : ("gaussian", 0.354)}
-optimize_params = {"maxdeg": ("int", (15, 15, 10))}
+fixed_basis_info = {"elements": list(E0s.keys()), "cor_order" : 3, "r_cut" : 6.7,  "smoothness_prior" : ("gaussian", 0.354), "pure" : True}
+optimize_params = {"maxdeg": ("int", (12, 12, 12))}
 
 HAL(fit_configs, # initial fitting database
     fit_configs, # initial starting datbase for HAL (often equal to initial fitting datbase)
@@ -63,12 +63,12 @@ HAL(fit_configs, # initial fitting database
     tau_rel=0.2, # biasing strength [0.1-0.3], e.g. biasing strength relative to regular MD forces
     ref_calc=calculator, # reference QM/DFT calculator
     dt_fs=1.0, # timestep (in fs)
-    T_K=800,  # temperature (in K)
+    T_K=900,  # temperature (in K)
     T_timescale_fs=100, # Langevin thermostat length scale (in fs)
     P_GPa=1.0, # Pressure (in GPa)
     swap_step_interval=0, # atom swap MC step interval 
     cell_step_interval=0, # cell shape MC step interval
-    basis_optim_kwargs={"n_trials": 3, # max number of basis optimisation iterations
+    basis_optim_kwargs={"n_trials": 2, # max number of basis optimisation iterations
                         "timeout" : 10000, # timeout for a basis optimisation iteration
                         "max_basis_len": 10000, # max basis size 
                         "fixed_basis_info": fixed_basis_info, # fixed basis information (see above)

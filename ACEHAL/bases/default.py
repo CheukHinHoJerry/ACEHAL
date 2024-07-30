@@ -1,4 +1,4 @@
-params = ["elements", "cor_order", "maxdeg", "r_cut", "smoothness_prior"]
+params = ["elements", "cor_order", "maxdeg", "r_cut", "smoothness_prior", "pure"]
 
 source = """using ACE1x
 
@@ -6,12 +6,16 @@ source = """using ACE1x
             cor_order = basis_info["cor_order"]
             maxdeg = basis_info["maxdeg"]
             r_cut = basis_info["r_cut"]
+            purify = basis_info["pure"]
+            
             smoothness_prior_param = basis_info["smoothness_prior"]
             
             B = ACE1x.acemodel(elements = Symbol.(elements), 
                         order = cor_order, 
                         totaldegree = maxdeg, 
-                        rcut = r_cut).basis
+                        rcut = r_cut,
+                        pure = purify
+                        ).basis
 
             B_length = length(B)
             if isnothing(smoothness_prior_param)
